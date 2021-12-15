@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import sookim.authServer.domain.User;
 import sookim.authServer.repository.UserRepository;
-
-@Controller
+//
+//@Controller
 //@RequiredArgsConstructor
 //@RequestMapping("/user")
-public class UserController {
+//public class UserController {
 //    private final UserRepository userRepository;
 //
 //    @PostMapping(value="", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -26,10 +26,6 @@ public class UserController {
 //        user.setPassword(passwordEncoder.encode(user.getPassword()));
 //        userRepository.save(user);
 //    }
-
-    @GetMapping("/login")
-    public String login(){
-        return "login";
-    }
-}
+//
+//}
 
