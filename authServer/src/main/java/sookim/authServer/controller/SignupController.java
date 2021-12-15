@@ -3,6 +3,7 @@ package sookim.authServer.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,8 +16,13 @@ import sookim.authServer.repository.UserRepository;
 public class SignupController {
     private final UserRepository userRepository;
 
+    @GetMapping("")
+    public String getSignup(){
+        return "signup";
+    }
+
     @PostMapping("")
-    public void postSignup(@RequestBody User user){
+    public void postSignup(User user){
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         user.setRole("ROLE_USER");
         user.setPassword(passwordEncoder.encode(user.getPassword()));

@@ -26,12 +26,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception
     {
         http.csrf().disable();
-        http.formLogin()
-            .loginPage("/login") // can either be mapping or file
-            .permitAll();
+
         http.authorizeRequests()
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .antMatchers("/**").permitAll()
+                .antMatchers("/signup").permitAll()
                 .and().formLogin()
                     .loginPage("/login")
                     .loginProcessingUrl("/login")
