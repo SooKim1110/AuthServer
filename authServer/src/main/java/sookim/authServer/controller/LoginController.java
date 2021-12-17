@@ -32,7 +32,7 @@ public class LoginController {
         return "login";
     }
 
-    @PostMapping("/login")
+    @PostMapping("/authenticate")
     public String authorize(User user, HttpServletResponse res){
 //        if (userRepository.findByUsername(user.getUsername()).orElse(null) == null) {
 //            return "redirect:/";
@@ -53,6 +53,6 @@ public class LoginController {
         res.addCookie(accessTokenCookie);
         res.addCookie(refreshTokenCookie);
 
-        return "redirect:/test";
+        return "test/login";
     }
 }
