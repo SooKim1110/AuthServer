@@ -33,7 +33,7 @@ public class LoginController {
     }
 
     @PostMapping("/authenticate")
-    public String authorize(User user, HttpServletResponse res){
+    public String authorize(User user, HttpServletResponse res) {
 //        if (userRepository.findByUsername(user.getUsername()).orElse(null) == null) {
 //            return "redirect:/";
 //        }

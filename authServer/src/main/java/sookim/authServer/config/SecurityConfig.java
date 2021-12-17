@@ -12,8 +12,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import sookim.authServer.service.CustomUserDetailsService;
-import sookim.authServer.util.jwt.JwtAccessDeniedHandler;
-import sookim.authServer.util.jwt.JwtAuthenticationEntryPoint;
+import sookim.authServer.util.jwt.CustomAccessDeniedHandler;
+import sookim.authServer.util.jwt.CustomAuthenticationEntryPoint;
 import sookim.authServer.util.jwt.JwtProvider;
 import sookim.authServer.util.jwt.JwtSecurityConfig;
 
@@ -24,13 +24,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     CustomUserDetailsService customUserDetailsService;
 
     private final JwtProvider jwtProvider;
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
-    public SecurityConfig(JwtProvider jwtProvider, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, JwtAccessDeniedHandler jwtAccessDeniedHandler){
+    public SecurityConfig(JwtProvider jwtProvider, CustomAuthenticationEntryPoint customAuthenticationEntryPoint, CustomAccessDeniedHandler customAccessDeniedHandler){
         this.jwtProvider = jwtProvider;
-        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
-        this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
+        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
+        this.customAccessDeniedHandler = customAccessDeniedHandler;
     }
 
     @Override
@@ -44,29 +44,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     {
         http.csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                .and()
-//                .httpBasic().authenticationEntryPoint()
-                .and()
-                .exceptionHandling().accessDeniedHandler(jwtAccessDeniedHandler)
                 .and()
                 .authorizeRequests()
                     .antMatchers("/signup").permitAll()
                     .antMatchers("/login").permitAll()
                     .antMatchers("/authenticate").permitAll()
+                    .antMatchers("/admin").hasRole("ADMIN")
                     .antMatchers("/test/user").hasRole("USER")
                     .antMatchers("/test/admin").hasRole("ADMIN")
                     .anyRequest().authenticated()
-    //                .and().formLogin()
-    //                    .loginPage("/login")
-    //                    .loginProcessingUrl("/login")
-    //                    .defaultSuccessUrl("/test")
-    //                    .failureUrl("/")
-    ////                    .failureHandler(loginFailureHandler())//로그인 실패 후 핸들러 (해당 핸들러를 생성하여 핸들링 해준다.)
-    //                    .permitAll() //사용자 정의 로그인 페이지 접근 권한 승인
-                    .and().apply(new JwtSecurityConfig(jwtProvider));
-        http.exceptionHandling()
-                .authenticationEntryPoint(jwtAuthenticationEntryPoint);
-//                .accessDeniedHandler(jwtAccessDeniedHandler);
+                    .and().apply(new JwtSecurityConfig(jwtProvider))
+                .and()
+                .exceptionHandling()
+                .authenticationEntryPoint(customAuthenticationEntryPoint)
+                .accessDeniedHandler(customAccessDeniedHandler);
     }
 
     @Bean
