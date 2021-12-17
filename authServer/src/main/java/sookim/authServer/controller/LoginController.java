@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import sookim.authServer.domain.User;
+import sookim.authServer.repository.UserRepository;
 import sookim.authServer.util.CookieUtil;
 import sookim.authServer.util.jwt.JwtProvider;
 
@@ -24,6 +25,7 @@ import static sookim.authServer.util.jwt.JwtProvider.REFRESH_TOKEN_VALIDATION_SE
 public class LoginController {
     private final JwtProvider jwtProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
+    private final UserRepository userRepository;
 
     @GetMapping("/login")
     public String login(){
@@ -32,7 +34,9 @@ public class LoginController {
 
     @PostMapping("/login")
     public String authorize(User user, HttpServletResponse res){
-        System.out.println("user = " + user);
+//        if (userRepository.findByUsername(user.getUsername()).orElse(null) == null) {
+//            return "redirect:/";
+//        }
 
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
