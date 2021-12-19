@@ -1,4 +1,4 @@
-package sookim.authServer.util.jwt;
+package sookim.authServer.config;
 
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -17,19 +17,6 @@ import java.io.IOException;
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        if (authException instanceof BadCredentialsException || authException instanceof InternalAuthenticationServiceException){
-            setResponse(response, ErrorCode.LOGIN_INPUT_INVALID);
-        }
-        else {
-            System.out.println("authException = " + authException);
-
-        }
-
-//        System.out.println("authException. = " + authException.getMessage());
-//        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-
-    }
-    public void setResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
-        response.sendError(errorCode.getStatus(), errorCode.getMessage());
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
     }
 }

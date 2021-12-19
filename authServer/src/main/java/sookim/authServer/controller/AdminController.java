@@ -18,12 +18,8 @@ public class AdminController {
 
     @GetMapping("")
     public String getAdmin(Model model){
-        try {
-            List<User> userList = userService.getUserList();
-            model.addAttribute("userList", userList);
-        }catch(Exception e){
-
-        }
+        List<User> userList = userService.getUserList();
+        model.addAttribute("userList", userList);
         return "admin";
     }
 }

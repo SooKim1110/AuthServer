@@ -3,18 +3,19 @@ package sookim.authServer.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
 import sookim.authServer.domain.User;
 import sookim.authServer.repository.UserRepository;
+import sookim.authServer.service.UserService;
+
+import javax.management.InvalidAttributeValueException;
 
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/signup")
 public class SignupController {
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @GetMapping("")
     public String getSignup(){
@@ -23,9 +24,6 @@ public class SignupController {
 
     @PostMapping("")
     public void postSignup(User user){
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        user.setRole("ROLE_USER");
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+        userService.saveUser(user);
     }
 }

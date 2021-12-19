@@ -6,6 +6,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
@@ -23,19 +24,20 @@ public class User {
     @Column(name = "user_id")
     private Long id;
 
-    @NotNull
+    @NotEmpty
     @Column(length = 30, unique = true)
     private String username;
 
     @NotNull
-    @Column(length = 300)
+    @Column(columnDefinition="char(60)")
     private String password;
 
     @NotNull
-    @Column(unique = true)
+    @Column(length = 254, unique = true)
     private String email;
 
     @Convert(converter = RoleAttributeConverter.class)
+    @Column(columnDefinition = "tinyint")
     private String role = "ROLE_USER";
 
     @CreatedDate
@@ -45,5 +47,7 @@ public class User {
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    private boolean disabled = false;
 
 }

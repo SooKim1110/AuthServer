@@ -19,6 +19,11 @@ public class TestController {
     public String getTestAdmin(){
         return "test/admin";
     }
+
+    @GetMapping("/login")
+    public String getTestLogin(){
+        return "test/login";
+    }
 }
 
 

@@ -1,4 +1,4 @@
-package sookim.authServer.util.jwt;
+package sookim.authServer.config;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;

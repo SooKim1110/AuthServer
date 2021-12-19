@@ -12,8 +12,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import sookim.authServer.service.CustomUserDetailsService;
-import sookim.authServer.util.jwt.CustomAccessDeniedHandler;
-import sookim.authServer.util.jwt.CustomAuthenticationEntryPoint;
+import sookim.authServer.service.RedisService;
 import sookim.authServer.util.jwt.JwtProvider;
 import sookim.authServer.util.jwt.JwtSecurityConfig;
 
@@ -24,13 +23,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     CustomUserDetailsService customUserDetailsService;
 
     private final JwtProvider jwtProvider;
+    private final RedisService redisService;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
-    public SecurityConfig(JwtProvider jwtProvider, CustomAuthenticationEntryPoint customAuthenticationEntryPoint, CustomAccessDeniedHandler customAccessDeniedHandler){
+    public SecurityConfig(JwtProvider jwtProvider, CustomAuthenticationEntryPoint customAuthenticationEntryPoint, CustomAccessDeniedHandler customAccessDeniedHandler, RedisService redisService){
         this.jwtProvider = jwtProvider;
         this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
         this.customAccessDeniedHandler = customAccessDeniedHandler;
+        this.redisService = redisService;
     }
 
     @Override
@@ -43,17 +44,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception
     {
         http.csrf().disable()
+                .formLogin().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
+                    .antMatchers("/").permitAll()
                     .antMatchers("/signup").permitAll()
                     .antMatchers("/login").permitAll()
+                    .antMatchers("/error").permitAll()
                     .antMatchers("/authenticate").permitAll()
+                    .antMatchers("/logout").authenticated()
                     .antMatchers("/admin").hasRole("ADMIN")
                     .antMatchers("/test/user").hasRole("USER")
                     .antMatchers("/test/admin").hasRole("ADMIN")
                     .anyRequest().authenticated()
-                    .and().apply(new JwtSecurityConfig(jwtProvider))
+                    .and().apply(new JwtSecurityConfig(jwtProvider, redisService, customUserDetailsService))
                 .and()
                 .exceptionHandling()
                 .authenticationEntryPoint(customAuthenticationEntryPoint)
