@@ -12,54 +12,57 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import sookim.authServer.service.CustomUserDetailsService;
-import sookim.authServer.util.jwt.JwtAccessDeniedHandler;
-import sookim.authServer.util.jwt.JwtAuthenticationEntryPoint;
+import sookim.authServer.service.RedisService;
 import sookim.authServer.util.jwt.JwtProvider;
 import sookim.authServer.util.jwt.JwtSecurityConfig;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    private final JwtProvider jwtProvider;
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     @Autowired
     CustomUserDetailsService customUserDetailsService;
 
-    public SecurityConfig(JwtProvider jwtProvider, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, JwtAccessDeniedHandler jwtAccessDeniedHandler){
+    private final JwtProvider jwtProvider;
+    private final RedisService redisService;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+
+    public SecurityConfig(JwtProvider jwtProvider, CustomAuthenticationEntryPoint customAuthenticationEntryPoint, CustomAccessDeniedHandler customAccessDeniedHandler, RedisService redisService){
         this.jwtProvider = jwtProvider;
-        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
-        this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
+        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
+        this.customAccessDeniedHandler = customAccessDeniedHandler;
+        this.redisService = redisService;
     }
 
     @Override
     public void configure(WebSecurity web) throws Exception
     {
-        web.ignoring().antMatchers("/css/**", "/script/**", "image/**", "/fonts/**", "lib/**");
+        web.ignoring().antMatchers("/style.css");
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception
     {
-        http.csrf().disable();
-        http.exceptionHandling()
-                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                .accessDeniedHandler(jwtAccessDeniedHandler);
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.authorizeRequests()
-                .antMatchers("/authenticate").permitAll()
-                .antMatchers("/signup").permitAll()
-                .antMatchers("/login").permitAll()
-                .antMatchers("/admin/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
-//                .and().formLogin()
-//                    .loginPage("/login")
-//                    .loginProcessingUrl("/login")
-////                    .defaultSuccessUrl("/")
-////                    .failureUrl("/login")
-                    .and()
-                    .logout()
-                .and().apply(new JwtSecurityConfig(jwtProvider));
+        http.csrf().disable()
+                .formLogin().disable()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .authorizeRequests()
+                    .antMatchers("/").permitAll()
+                    .antMatchers("/signup").permitAll()
+                    .antMatchers("/login").permitAll()
+                    .antMatchers("/error").permitAll()
+                    .antMatchers("/authenticate").permitAll()
+                    .antMatchers("/logout").authenticated()
+                    .antMatchers("/admin").hasRole("ADMIN")
+                    .antMatchers("/test/user").hasRole("USER")
+                    .antMatchers("/test/admin").hasRole("ADMIN")
+                    .anyRequest().authenticated()
+                    .and().apply(new JwtSecurityConfig(jwtProvider, redisService, customUserDetailsService))
+                .and()
+                .exceptionHandling()
+                .authenticationEntryPoint(customAuthenticationEntryPoint)
+                .accessDeniedHandler(customAccessDeniedHandler);
     }
 
     @Bean

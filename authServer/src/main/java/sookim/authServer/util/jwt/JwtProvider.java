@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class JwtProvider implements InitializingBean {
     private static final long serialVersionUID = 1234567890123456L;
 
-    public final static long ACCESS_TOKEN_VALIDATION_SEC = 1000;
+    public final static long ACCESS_TOKEN_VALIDATION_SEC = 1000 * 60;
     //    public final static long ACCESS_TOKEN_VALIDATION_SEC = 1000 * 60L * 60L * 2L; //2시간
     public static final long REFRESH_TOKEN_VALIDATION_SEC = 1000 * 60 * 60 * 24 * 14; // 2주
 
@@ -81,15 +81,13 @@ public class JwtProvider implements InitializingBean {
     }
 
     public boolean validateToken(String token){
-        try{
-            Claims claims = extractClaims(token);
-            System.out.println("claims.getExpiration() = " + claims.getExpiration());
-            return claims.getExpiration().after(new Date());
-        } catch(io.jsonwebtoken.security.SecurityException | MalformedJwtException e){
-            //에러 처리
-            System.out.println("e = " + e);
-        }
-        return false;
+        Claims claims = extractClaims(token);
+        return claims.getExpiration().after(new Date());
+    }
+
+    public String getUsername(String token){
+        Claims claims = extractClaims(token);
+        return claims.getSubject();
     }
 
 }

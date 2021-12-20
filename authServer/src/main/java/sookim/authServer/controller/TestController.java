@@ -10,9 +10,19 @@ import sookim.authServer.repository.UserRepository;
 @RequiredArgsConstructor
 @RequestMapping("/test")
 public class TestController {
-    @GetMapping("")
-    public String getTest(){
-        return "test";
+    @GetMapping("/user")
+    public String getTestUser(){
+        return "test/user";
+    }
+
+    @GetMapping("/admin")
+    public String getTestAdmin(){
+        return "test/admin";
+    }
+
+    @GetMapping("/login")
+    public String getTestLogin(){
+        return "test/login";
     }
 }
 

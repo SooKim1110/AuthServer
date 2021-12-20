@@ -1,11 +1,18 @@
 package sookim.authServer.util.jwt;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.web.filter.OncePerRequestFilter;
+import sookim.authServer.service.CustomUserDetailsService;
+import sookim.authServer.service.RedisService;
 import sookim.authServer.util.CookieUtil;
 
 import javax.servlet.FilterChain;
@@ -19,48 +26,61 @@ import java.io.IOException;
 
 import static sookim.authServer.util.jwt.JwtProvider.ACCESS_TOKEN_VALIDATION_SEC;
 
-public class JwtFilter extends GenericFilterBean {
+@Component
+public class JwtFilter extends OncePerRequestFilter {
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
 
     private JwtProvider jwtProvider;
+    private RedisService redisService;
+    private CustomUserDetailsService customUserDetailsService;
 
-    public JwtFilter(JwtProvider jwtProvider){
+    public JwtFilter(JwtProvider jwtProvider, RedisService redisService, CustomUserDetailsService customUserDetailsService){
         this.jwtProvider = jwtProvider;
+        this.redisService = redisService;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-        String accessToken = null, refreshToken = null;
-        final Cookie[] cookies = httpServletRequest.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("AccessToken"))
-                    accessToken = cookie.getValue();
-                else if (cookie.getName().equals("RefreshToken"))
-                    refreshToken = cookie.getValue();
-            }
-        }
-        System.out.println("accessToken = " + accessToken);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+        String accessToken = CookieUtil.getCookieValue(request, "AccessToken");
+        String refreshToken = CookieUtil.getCookieValue(request, "RefreshToken");
+
         try{
-            if (accessToken != null && jwtProvider.validateToken(accessToken)){
+            if (accessToken == null && refreshToken == null){
+                System.out.println("No Token");
+            }
+            else if (accessToken != null && !jwtProvider.validateToken(accessToken)) {
+                System.out.println("Invalid AccessToken");
+            }
+            else if (accessToken != null && jwtProvider.validateToken(accessToken) && SecurityContextHolder.getContext().getAuthentication() == null){
                 Authentication authentication = jwtProvider.getAuthentication(accessToken);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                System.out.println("인증 정보를 저장했습니다");
-            } else{
-                System.out.println("유효한 access token 없습니다");
-                if (refreshToken != null && jwtProvider.validateToken(refreshToken)){
+            }
+            else{
+                if (refreshToken == null || !jwtProvider.validateToken(refreshToken)) {
+                    System.out.println("No RefreshToken");
+                }
+                else if (jwtProvider.validateToken(refreshToken)){
                     Authentication authentication = jwtProvider.getAuthentication(refreshToken);
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                    String newAccessToken = jwtProvider.createAccessToken(SecurityContextHolder.getContext().getAuthentication());
-                    Cookie newAccessTokenCookie = CookieUtil.createCookie("AccessToken", newAccessToken, ACCESS_TOKEN_VALIDATION_SEC);
-                    HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-                    httpServletResponse.addCookie(newAccessTokenCookie);
+                    String redisToken = redisService.getData("RefreshToken:"+ authentication.getName());
+                    if (!refreshToken.equals(redisToken)) {
+                        System.out.println("refresh token이 redis의 토큰과 일치하지 않습니다.");
+                    }
+                    else {
+                        System.out.println("refresh token이 올바릅니다");
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        String newAccessToken = jwtProvider.createAccessToken(SecurityContextHolder.getContext().getAuthentication());
+                        Cookie newAccessTokenCookie = CookieUtil.createCookie("AccessToken", newAccessToken, ACCESS_TOKEN_VALIDATION_SEC);
+                        HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+                        httpServletResponse.addCookie(newAccessTokenCookie);
+                    }
                 }
             }
-        }catch(Exception e){}
+        }
+        catch(Exception e){
+            System.out.println("JWT filter error = " + e);
+        };
         chain.doFilter(request, response);
     }
-
 }
