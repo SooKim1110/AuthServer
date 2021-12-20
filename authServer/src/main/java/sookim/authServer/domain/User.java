@@ -48,6 +48,7 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(nullable = false, columnDefinition = "tinyint(1)")
     private boolean disabled = false;
 
 }
