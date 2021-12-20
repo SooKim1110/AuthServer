@@ -53,7 +53,7 @@ public class JwtFilter extends OncePerRequestFilter {
             else if (accessToken != null && !jwtProvider.validateToken(accessToken)) {
                 System.out.println("Invalid AccessToken");
             }
-            else if (accessToken != null && jwtProvider.validateToken(accessToken) && SecurityContextHolder.getContext().getAuthentication() == null){
+            else if (accessToken != null && jwtProvider.validateToken(accessToken)){
                 Authentication authentication = jwtProvider.getAuthentication(accessToken);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
