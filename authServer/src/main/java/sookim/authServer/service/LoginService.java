@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import sookim.authServer.domain.User;
+import sookim.authServer.dto.Tokens;
 import sookim.authServer.util.CookieUtil;
 import sookim.authServer.util.jwt.JwtProvider;
 
@@ -24,7 +25,7 @@ public class LoginService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final RedisService redisService;
 
-    public void loginUser (User user, HttpServletResponse response){
+    public Tokens loginUser (User user, HttpServletResponse response){
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
             Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
@@ -39,10 +40,15 @@ public class LoginService {
 
             response.addCookie(accessTokenCookie);
             response.addCookie(refreshTokenCookie);
+            return Tokens.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .build();
     }
 
     public void logoutUser (HttpServletRequest request, HttpServletResponse response) {
         String accessToken = CookieUtil.getCookieValue(request, "AccessToken");
+        System.out.println("accessToken = " + accessToken);
         if (accessToken != null && jwtProvider.validateToken(accessToken)){
             Authentication authentication = jwtProvider.getAuthentication(accessToken);
 

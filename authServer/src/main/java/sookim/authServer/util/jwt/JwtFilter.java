@@ -40,12 +40,11 @@ public class JwtFilter extends OncePerRequestFilter {
         this.redisService = redisService;
         this.customUserDetailsService = customUserDetailsService;
     }
-
+    
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
         String accessToken = CookieUtil.getCookieValue(request, "AccessToken");
         String refreshToken = CookieUtil.getCookieValue(request, "RefreshToken");
-
         try{
             if (accessToken == null && refreshToken == null){
                 System.out.println("No Token");
@@ -56,6 +55,7 @@ public class JwtFilter extends OncePerRequestFilter {
             else if (accessToken != null && jwtProvider.validateToken(accessToken)){
                 Authentication authentication = jwtProvider.getAuthentication(accessToken);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                System.out.println("valid AccessToken");
             }
             else{
                 if (refreshToken == null || !jwtProvider.validateToken(refreshToken)) {

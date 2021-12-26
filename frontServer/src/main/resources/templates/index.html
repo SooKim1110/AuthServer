@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:insert="common/head.html"></head>
+
+<body>
+<header th:insert="common/header.html"></header>
+<div class = "center-text">
+    <h1>Main Page</h1>
+</div>
+<div style="margin-top: 15vh" class="col text-center">
+    <button type="button" onclick="location.href='/user'" class="btn btn-primary">
+        User 페이지
+    </button>
+</div>
+<div style="margin-top: 2vh" class="col text-center">
+    <button type="button" onclick="location.href='/admin'" class="btn btn-primary">
+        Admin 페이지
+    </button>
+</div>
+
+</body>
