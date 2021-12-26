@@ -11,10 +11,15 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import sookim.authServer.service.CustomUserDetailsService;
 import sookim.authServer.service.RedisService;
 import sookim.authServer.util.jwt.JwtProvider;
 import sookim.authServer.util.jwt.JwtSecurityConfig;
+
+import java.util.Arrays;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -43,7 +48,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception
     {
-        http.csrf().disable()
+        http.csrf().disable().cors()
+                .and()
                 .formLogin().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
@@ -52,12 +58,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers("/signup").permitAll()
                     .antMatchers("/login").permitAll()
                     .antMatchers("/error").permitAll()
-                    .antMatchers("/authenticate").permitAll()
                     .antMatchers("/signup/verify/**").permitAll()
-                    .antMatchers("/logout").authenticated()
+                    .antMatchers("/authenticate/user").hasRole("USER")
                     .antMatchers("/admin").hasRole("ADMIN")
-                    .antMatchers("/test/user").hasRole("USER")
-                    .antMatchers("/test/admin").hasRole("ADMIN")
                     .anyRequest().authenticated()
                     .and().apply(new JwtSecurityConfig(jwtProvider, redisService, customUserDetailsService))
                 .and()
@@ -76,4 +79,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(customUserDetailsService);
     }
 
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+        configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type", "Cookie"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 }

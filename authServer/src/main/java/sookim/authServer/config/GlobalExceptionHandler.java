@@ -77,11 +77,10 @@ public class GlobalExceptionHandler {
 //            BadCredentialsException.class,
 //            InternalAuthenticationServiceException.class
 //    })
-//    protected String handleException(InternalAuthenticationServiceException e) {
-//        final ErrorResponse response = ErrorResponse.of(ErrorCode.LOGIN_INPUT_INVALID);
-//        return "redirect:/login";
-////        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
+    protected ResponseEntity<ErrorResponse> handleException(InternalAuthenticationServiceException e) {
+        final ErrorResponse response = ErrorResponse.of(ErrorCode.LOGIN_CREDENTIAL_INVALID);
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ErrorResponse> handleException(Exception e) {

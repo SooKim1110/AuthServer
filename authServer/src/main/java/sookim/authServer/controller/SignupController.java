@@ -14,27 +14,23 @@ import sookim.authServer.service.VerifyEmailService;
 
 import javax.management.InvalidAttributeValueException;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
-@RequestMapping("/signup")
+@RequestMapping(value="/signup")
 public class SignupController {
     private final UserService userService;
     private final VerifyEmailService verifyEmailService;
 
-    @GetMapping("")
-    public String getSignup() {
-        return "signup";
-    }
-
     @PostMapping("")
-    public String postSignup(User user) {
+    public ResponseEntity<Boolean> postSignup(@RequestBody User user) {
         try {
+            System.out.println("user = " + user);
             userService.saveUser(user);
             verifyEmailService.sendVerifyMail(user);
         } catch (Exception exception) {
             System.out.println("exception = " + exception);
         }
-        return "redirect:/login";
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @GetMapping("/verify/{key}")
