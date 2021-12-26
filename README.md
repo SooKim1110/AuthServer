@@ -13,7 +13,7 @@ Spring Boot 기반의 로그인, 회원가입, 토큰 인증 시스템
 <br></br>
 
 # 아키텍쳐
-<img width="800" alt="Screen Shot 2021-12-20 at 5 13 38 PM" src="https://user-images.githubusercontent.com/47516074/146736333-7661c79b-2587-4066-8fd8-0f46b748752c.png">
+<img width="800" alt="Screen Shot 2021-12-26 at 11 47 02 PM" src="https://user-images.githubusercontent.com/47516074/147411693-19571a10-7c3f-432b-b4e4-e5879b58d1ab.png">
 <br></br>
 
 # 기능 및 동작 방식
